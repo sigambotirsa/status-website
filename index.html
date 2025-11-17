@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Status Indicator</title>
+<title>ik1e Status</title>
 <style>
     :root {
         --available-color: #28a745;
@@ -28,15 +28,21 @@
 
     .status-box {
         margin-top: 30px;
-        padding: 20px;
-        font-size: 24px;
+        padding: 25px 40px;
+        font-size: 28px;
         font-weight: bold;
-        border-radius: 10px;
+        border-radius: 12px;
         display: inline-block;
-        min-width: 250px;
+        min-width: 300px;
         background: var(--default-color);
         color: var(--text-light);
         transition: background 0.3s, color 0.3s;
+    }
+
+    #statusTime {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #ccc;
     }
 
     /* Buttons */
@@ -52,7 +58,7 @@
         overflow: hidden;
     }
 
-    /* Hover effect: scale and shadow */
+    /* Hover effect */
     .btn:hover {
         transform: scale(1.1);
         box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
@@ -97,23 +103,27 @@
 <h1>ik1e</h1>
 
 <!-- Buttons -->
-<button class="btn available" data-status="Available" data-color="var(--available-color)">Available</button>
-<button class="btn not-available" data-status="Online but Not Available" data-color="var(--not-available-color)">Online but Not Available</button>
-<button class="btn offline" data-status="Offline" data-color="var(--offline-color)">Offline</button>
+<button class="btn available" data-status="Available" data-color="var(--available-color)" data-icon="✅">Available</button>
+<button class="btn not-available" data-status="Online but Not Available" data-color="var(--not-available-color)" data-icon="⚠️">Online but Not Available</button>
+<button class="btn offline" data-status="Offline" data-color="var(--offline-color)" data-icon="❌">Offline</button>
 
 <!-- Status Box -->
 <div id="statusBox" class="status-box" aria-live="polite">
     Select a status
 </div>
 
+<!-- Timestamp -->
+<div id="statusTime">Last updated: --:--:--</div>
+
 <script>
     const statusBox = document.getElementById('statusBox');
+    const statusTime = document.getElementById('statusTime');
 
     // Function to update status
-    function setStatus(text, color) {
+    function setStatus(text, color, icon = '') {
         const computedColor = getComputedStyle(document.documentElement)
                               .getPropertyValue(color).trim();
-        statusBox.textContent = text;
+        statusBox.textContent = `${icon} ${text}`;
         statusBox.style.background = computedColor;
         statusBox.style.color = (computedColor === getComputedStyle(document.documentElement).getPropertyValue('--not-available-color').trim()) 
                                 ? getComputedStyle(document.documentElement).getPropertyValue('--text-dark').trim()
@@ -122,12 +132,22 @@
         // Save to localStorage
         localStorage.setItem('statusText', text);
         localStorage.setItem('statusColor', color);
+        localStorage.setItem('statusIcon', icon);
+
+        updateTime();
+    }
+
+    // Update timestamp
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        statusTime.textContent = `Last updated: ${timeString}`;
     }
 
     // Attach event listeners to buttons
     document.querySelectorAll('.btn').forEach(button => {
         button.addEventListener('click', () => {
-            setStatus(button.dataset.status, button.dataset.color);
+            setStatus(button.dataset.status, button.dataset.color, button.dataset.icon);
         });
     });
 
@@ -135,8 +155,11 @@
     window.addEventListener('DOMContentLoaded', () => {
         const savedText = localStorage.getItem('statusText');
         const savedColor = localStorage.getItem('statusColor');
+        const savedIcon = localStorage.getItem('statusIcon') || '';
         if (savedText && savedColor) {
-            setStatus(savedText, savedColor);
+            setStatus(savedText, savedColor, savedIcon);
+        } else {
+            updateTime();
         }
     });
 </script>
