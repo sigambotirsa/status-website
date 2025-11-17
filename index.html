@@ -3,122 +3,104 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Guns Catalog</title>
+<title>Status Indicator</title>
 <style>
+    :root {
+        --available-color: #28a745;
+        --not-available-color: #ffc107;
+        --offline-color: #dc3545;
+        --default-color: #999;
+        --text-light: white;
+        --text-dark: black;
+    }
+
     body {
-        margin: 0;
-        font-family: 'Arial', sans-serif;
-        background: #111;
-        color: #fff;
-    }
-
-    header {
+        font-family: Arial, sans-serif;
         text-align: center;
+        padding-top: 50px;
+        background: #f5f5f5;
+    }
+
+    .status-box {
+        margin-top: 30px;
         padding: 20px;
-        background: #222;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    }
-
-    h1 {
-        margin: 0;
-        font-size: 2em;
-        color: #f1c40f;
-    }
-
-    .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        padding: 20px;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .card {
-        background: #222;
+        font-size: 24px;
+        font-weight: bold;
         border-radius: 10px;
-        overflow: hidden;
-        text-align: center;
-        transition: transform 0.3s, box-shadow 0.3s;
+        display: inline-block;
+        min-width: 250px;
+        background: var(--default-color);
+        color: var(--text-light);
+        transition: background 0.3s, color 0.3s;
+    }
+
+    .btn {
+        padding: 15px 25px;
+        margin: 10px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
         cursor: pointer;
-        border: 1px solid #444;
+        transition: opacity 0.2s;
     }
 
-    .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.7);
+    .btn:hover {
+        opacity: 0.85;
     }
 
-    .card img {
-        width: 100%;
-        height: 150px;
-        object-fit: cover;
-        display: block;
-    }
-
-    .card h2 {
-        margin: 10px 0 5px;
-        font-size: 1.2em;
-        color: #f1c40f;
-    }
-
-    .card p {
-        margin: 0 0 10px;
-        font-size: 0.9em;
-        color: #ccc;
-    }
-
-    footer {
-        text-align: center;
-        padding: 20px;
-        background: #222;
-        color: #888;
-        margin-top: 40px;
-    }
+    .available { background: var(--available-color); color: var(--text-light); }
+    .not-available { background: var(--not-available-color); color: var(--text-dark); }
+    .offline { background: var(--offline-color); color: var(--text-light); }
 </style>
 </head>
 <body>
 
-<header>
-    <h1>Guns Catalog</h1>
-</header>
+<h1>Status Control Panel</h1>
 
-<div class="grid">
-    <div class="card">
-        <img src="https://via.placeholder.com/200x150?text=AK-47" alt="AK-47">
-        <h2>AK-47</h2>
-        <p>Assault Rifle</p>
-    </div>
-    <div class="card">
-        <img src="https://via.placeholder.com/200x150?text=M4A1" alt="M4A1">
-        <h2>M4A1</h2>
-        <p>Assault Rifle</p>
-    </div>
-    <div class="card">
-        <img src="https://via.placeholder.com/200x150?text=Glock+19" alt="Glock 19">
-        <h2>Glock 19</h2>
-        <p>Pistol</p>
-    </div>
-    <div class="card">
-        <img src="https://via.placeholder.com/200x150?text=Desert+Eagle" alt="Desert Eagle">
-        <h2>Desert Eagle</h2>
-        <p>Pistol</p>
-    </div>
-    <div class="card">
-        <img src="https://via.placeholder.com/200x150?text=Sniper+Rifle" alt="Sniper Rifle">
-        <h2>Sniper Rifle</h2>
-        <p>Precision</p>
-    </div>
-    <div class="card">
-        <img src="https://via.placeholder.com/200x150?text=Shotgun" alt="Shotgun">
-        <h2>Shotgun</h2>
-        <p>Close Range</p>
-    </div>
+<!-- Buttons -->
+<button class="btn available" data-status="Available" data-color="var(--available-color)">Available</button>
+<button class="btn not-available" data-status="Online but Not Available" data-color="var(--not-available-color)">Online but Not Available</button>
+<button class="btn offline" data-status="Offline" data-color="var(--offline-color)">Offline</button>
+
+<!-- Status Box -->
+<div id="statusBox" class="status-box" aria-live="polite">
+    Select a status
 </div>
 
-<footer>
-    &copy; 2025 Guns Catalog. All rights reserved.
-</footer>
+<script>
+    const statusBox = document.getElementById('statusBox');
+
+    // Function to update status
+    function setStatus(text, color) {
+        const computedColor = getComputedStyle(document.documentElement)
+                              .getPropertyValue(color).trim();
+        statusBox.textContent = text;
+        statusBox.style.background = computedColor;
+        statusBox.style.color = (computedColor === getComputedStyle(document.documentElement).getPropertyValue('--not-available-color').trim()) 
+                                ? getComputedStyle(document.documentElement).getPropertyValue('--text-dark').trim()
+                                : getComputedStyle(document.documentElement).getPropertyValue('--text-light').trim();
+
+        // Save to localStorage
+        localStorage.setItem('statusText', text);
+        localStorage.setItem('statusColor', color);
+    }
+
+    // Attach event listeners to buttons
+    document.querySelectorAll('.btn').forEach(button => {
+        button.addEventListener('click', () => {
+            setStatus(button.dataset.status, button.dataset.color);
+        });
+    });
+
+    // Load saved status on page load
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedText = localStorage.getItem('statusText');
+        const savedColor = localStorage.getItem('statusColor');
+        if (savedText && savedColor) {
+            setStatus(savedText, savedColor);
+        }
+    });
+</script>
 
 </body>
 </html>
