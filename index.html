@@ -90,7 +90,7 @@
     .offline { background: var(--offline-color); color: var(--text-light); }
 
     /* Hidden by default */
-    #buttonContainer { display: none; }
+    #buttonContainer { display: none; margin-top: 20px; }
 </style>
 </head>
 <body>
@@ -109,61 +109,72 @@
 <div id="statusTime">Last updated: --:--:--</div>
 
 <script>
-    const statusBox = document.getElementById('statusBox');
-    const statusTime = document.getElementById('statusTime');
-    const buttonContainer = document.getElementById('buttonContainer');
-    const buttons = buttonContainer.querySelectorAll('.btn');
+const statusBox = document.getElementById('statusBox');
+const statusTime = document.getElementById('statusTime');
+const buttonContainer = document.getElementById('buttonContainer');
+const buttons = buttonContainer.querySelectorAll('.btn');
 
-    const PASSWORD = "YourSecret123"; // change to your secret password
+const PASSWORD = "ik1egoonersecret"; // your secret password
 
-    // Prompt for password
-    const input = prompt("Enter password to unlock status buttons (leave blank for view-only):");
-    if (input === PASSWORD) {
-        buttonContainer.style.display = "block";
-        alert("Buttons unlocked! You can now change your status.");
-    }
+let unlocked = false;
 
-    // Update status function
-    function setStatus(text, color, icon='') {
-        const computedColor = getComputedStyle(document.documentElement).getPropertyValue(color).trim();
-        statusBox.textContent = `${icon} ${text}`;
-        statusBox.style.background = computedColor;
-        statusBox.style.color = (computedColor === getComputedStyle(document.documentElement).getPropertyValue('--not-available-color').trim()) 
-                                ? getComputedStyle(document.documentElement).getPropertyValue('--text-dark').trim()
-                                : getComputedStyle(document.documentElement).getPropertyValue('--text-light').trim();
+// Function to set status
+function setStatus(text, color, icon='') {
+    const computedColor = getComputedStyle(document.documentElement).getPropertyValue(color).trim();
+    statusBox.textContent = `${icon} ${text}`;
+    statusBox.style.background = computedColor;
+    statusBox.style.color = (computedColor === getComputedStyle(document.documentElement).getPropertyValue('--not-available-color').trim()) 
+                            ? getComputedStyle(document.documentElement).getPropertyValue('--text-dark').trim()
+                            : getComputedStyle(document.documentElement).getPropertyValue('--text-light').trim();
 
-        localStorage.setItem('statusText', text);
-        localStorage.setItem('statusColor', color);
-        localStorage.setItem('statusIcon', icon);
+    localStorage.setItem('statusText', text);
+    localStorage.setItem('statusColor', color);
+    localStorage.setItem('statusIcon', icon);
 
+    updateTime();
+}
+
+// Update timestamp
+function updateTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString();
+    statusTime.textContent = `Last updated: ${timeString}`;
+}
+
+// Load saved status
+window.addEventListener('DOMContentLoaded', () => {
+    const savedText = localStorage.getItem('statusText');
+    const savedColor = localStorage.getItem('statusColor');
+    const savedIcon = localStorage.getItem('statusIcon') || '';
+    if (savedText && savedColor) {
+        setStatus(savedText, savedColor, savedIcon);
+    } else {
         updateTime();
     }
+});
 
-    // Update timestamp
-    function updateTime() {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString();
-        statusTime.textContent = `Last updated: ${timeString}`;
-    }
-
-    // Attach event listeners
-    buttons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            setStatus(btn.dataset.status, btn.dataset.color, btn.dataset.icon);
-        });
+// Attach event listeners
+buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        setStatus(btn.dataset.status, btn.dataset.color, btn.dataset.icon);
     });
+});
 
-    // Load saved status on page load
-    window.addEventListener('DOMContentLoaded', () => {
-        const savedText = localStorage.getItem('statusText');
-        const savedColor = localStorage.getItem('statusColor');
-        const savedIcon = localStorage.getItem('statusIcon') || '';
-        if (savedText && savedColor) {
-            setStatus(savedText, savedColor, savedIcon);
-        } else {
-            updateTime();
+// Secret key combination to show buttons (Ctrl + Shift + S)
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') {
+        if (!unlocked) {
+            const input = prompt("Enter password to unlock status buttons:");
+            if (input === PASSWORD) {
+                buttonContainer.style.display = "block";
+                unlocked = true;
+                alert("Buttons unlocked! You can now change your status.");
+            } else {
+                alert("Incorrect password.");
+            }
         }
-    });
+    }
+});
 </script>
 
 </body>
