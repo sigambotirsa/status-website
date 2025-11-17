@@ -56,18 +56,13 @@
         overflow: hidden;
     }
 
-    .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .btn:hover:not(:disabled) {
+    .btn:hover {
         transform: scale(1.1);
-        box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 20px rgba(255,255,255,0.2);
         opacity: 0.9;
     }
 
-    .btn:active:not(:disabled) { transform: scale(0.95); }
+    .btn:active { transform: scale(0.95); }
 
     .btn::after {
         content: "";
@@ -84,7 +79,7 @@
         transform: scale(0);
     }
 
-    .btn:active:not(:disabled)::after {
+    .btn:active::after {
         opacity: 1;
         transform: scale(1.5);
         transition: 0s;
@@ -93,16 +88,21 @@
     .available { background: var(--available-color); color: var(--text-light); }
     .not-available { background: var(--not-available-color); color: var(--text-dark); }
     .offline { background: var(--offline-color); color: var(--text-light); }
+
+    /* Hidden by default */
+    #buttonContainer { display: none; }
 </style>
 </head>
 <body>
 
 <h1>ik1e</h1>
 
-<!-- Buttons -->
-<button class="btn available" data-status="Available" data-color="var(--available-color)" data-icon="✅">Available</button>
-<button class="btn not-available" data-status="Online but Not Available" data-color="var(--not-available-color)" data-icon="⚠️">Online but Not Available</button>
-<button class="btn offline" data-status="Offline" data-color="var(--offline-color)" data-icon="❌">Offline</button>
+<!-- Buttons container (hidden by default) -->
+<div id="buttonContainer">
+    <button class="btn available" data-status="Available" data-color="var(--available-color)" data-icon="✅">Available</button>
+    <button class="btn not-available" data-status="Online but Not Available" data-color="var(--not-available-color)" data-icon="⚠️">Online but Not Available</button>
+    <button class="btn offline" data-status="Offline" data-color="var(--offline-color)" data-icon="❌">Offline</button>
+</div>
 
 <!-- Status Box -->
 <div id="statusBox" class="status-box" aria-live="polite">Select a status</div>
@@ -111,19 +111,16 @@
 <script>
     const statusBox = document.getElementById('statusBox');
     const statusTime = document.getElementById('statusTime');
-    const buttons = document.querySelectorAll('.btn');
+    const buttonContainer = document.getElementById('buttonContainer');
+    const buttons = buttonContainer.querySelectorAll('.btn');
 
-    // Password to unlock buttons
-    const PASSWORD = "mypassword"; // change this to something secure
+    const PASSWORD = "YourSecret123"; // change to your secret password
 
-    // Disable all buttons by default
-    buttons.forEach(btn => btn.disabled = true);
-
-    // Prompt user for password
+    // Prompt for password
     const input = prompt("Enter password to unlock status buttons (leave blank for view-only):");
     if (input === PASSWORD) {
-        buttons.forEach(btn => btn.disabled = false);
-        alert("Buttons unlocked! You can now change the status.");
+        buttonContainer.style.display = "block";
+        alert("Buttons unlocked! You can now change your status.");
     }
 
     // Update status function
@@ -152,9 +149,7 @@
     // Attach event listeners
     buttons.forEach(btn => {
         btn.addEventListener('click', () => {
-            if (!btn.disabled) {
-                setStatus(btn.dataset.status, btn.dataset.color, btn.dataset.icon);
-            }
+            setStatus(btn.dataset.status, btn.dataset.color, btn.dataset.icon);
         });
     });
 
