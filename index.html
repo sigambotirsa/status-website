@@ -9,7 +9,7 @@
         --available-color: #28a745;
         --not-available-color: #ffc107;
         --offline-color: #dc3545;
-        --default-color: #333; /* Dark gray for dark mode */
+        --default-color: #333;
         --text-light: #fff;
         --text-dark: #000;
     }
@@ -18,13 +18,11 @@
         font-family: Arial, sans-serif;
         text-align: center;
         padding-top: 50px;
-        background: #000; /* Black background */
+        background: #000;
         color: var(--text-light);
     }
 
-    h1 {
-        margin-bottom: 20px;
-    }
+    h1 { margin-bottom: 20px; }
 
     .status-box {
         margin-top: 30px;
@@ -58,19 +56,19 @@
         overflow: hidden;
     }
 
-    /* Hover effect */
-    .btn:hover {
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn:hover:not(:disabled) {
         transform: scale(1.1);
         box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
         opacity: 0.9;
     }
 
-    /* Click effect */
-    .btn:active {
-        transform: scale(0.95);
-    }
+    .btn:active:not(:disabled) { transform: scale(0.95); }
 
-    /* Ripple effect */
     .btn::after {
         content: "";
         position: absolute;
@@ -78,7 +76,7 @@
         height: 100%;
         top: 0;
         left: 0;
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255,255,255,0.2);
         border-radius: inherit;
         opacity: 0;
         pointer-events: none;
@@ -86,13 +84,12 @@
         transform: scale(0);
     }
 
-    .btn:active::after {
+    .btn:active:not(:disabled)::after {
         opacity: 1;
         transform: scale(1.5);
         transition: 0s;
     }
 
-    /* Button colors */
     .available { background: var(--available-color); color: var(--text-light); }
     .not-available { background: var(--not-available-color); color: var(--text-dark); }
     .offline { background: var(--offline-color); color: var(--text-light); }
@@ -108,28 +105,36 @@
 <button class="btn offline" data-status="Offline" data-color="var(--offline-color)" data-icon="❌">Offline</button>
 
 <!-- Status Box -->
-<div id="statusBox" class="status-box" aria-live="polite">
-    Select a status
-</div>
-
-<!-- Timestamp -->
+<div id="statusBox" class="status-box" aria-live="polite">Select a status</div>
 <div id="statusTime">Last updated: --:--:--</div>
 
 <script>
     const statusBox = document.getElementById('statusBox');
     const statusTime = document.getElementById('statusTime');
+    const buttons = document.querySelectorAll('.btn');
 
-    // Function to update status
-    function setStatus(text, color, icon = '') {
-        const computedColor = getComputedStyle(document.documentElement)
-                              .getPropertyValue(color).trim();
+    // Password to unlock buttons
+    const PASSWORD = "mypassword"; // change this to something secure
+
+    // Disable all buttons by default
+    buttons.forEach(btn => btn.disabled = true);
+
+    // Prompt user for password
+    const input = prompt("Enter password to unlock status buttons (leave blank for view-only):");
+    if (input === PASSWORD) {
+        buttons.forEach(btn => btn.disabled = false);
+        alert("Buttons unlocked! You can now change the status.");
+    }
+
+    // Update status function
+    function setStatus(text, color, icon='') {
+        const computedColor = getComputedStyle(document.documentElement).getPropertyValue(color).trim();
         statusBox.textContent = `${icon} ${text}`;
         statusBox.style.background = computedColor;
         statusBox.style.color = (computedColor === getComputedStyle(document.documentElement).getPropertyValue('--not-available-color').trim()) 
                                 ? getComputedStyle(document.documentElement).getPropertyValue('--text-dark').trim()
                                 : getComputedStyle(document.documentElement).getPropertyValue('--text-light').trim();
 
-        // Save to localStorage
         localStorage.setItem('statusText', text);
         localStorage.setItem('statusColor', color);
         localStorage.setItem('statusIcon', icon);
@@ -144,10 +149,12 @@
         statusTime.textContent = `Last updated: ${timeString}`;
     }
 
-    // Attach event listeners to buttons
-    document.querySelectorAll('.btn').forEach(button => {
-        button.addEventListener('click', () => {
-            setStatus(button.dataset.status, button.dataset.color, button.dataset.icon);
+    // Attach event listeners
+    buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (!btn.disabled) {
+                setStatus(btn.dataset.status, btn.dataset.color, btn.dataset.icon);
+            }
         });
     });
 
